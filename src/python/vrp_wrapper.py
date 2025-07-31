@@ -15,6 +15,7 @@ class CppVRPWrapper:
             import os
             # Check if executable already exists
             cpp_path = os.path.join(os.path.dirname(__file__), '..', 'cpp', 'vrp_solver')
+            cpp_path = os.path.abspath(cpp_path)  # Get absolute path
             if os.path.exists(cpp_path):
                 self.cpp_executable = cpp_path
                 print("✅ C++ VRP solver found")
@@ -22,6 +23,7 @@ class CppVRPWrapper:
             
             # Try to compile if not found
             cpp_source = os.path.join(os.path.dirname(__file__), '..', 'cpp', 'vrp_solver.cpp')
+            cpp_source = os.path.abspath(cpp_source)  # Get absolute path
             if os.path.exists(cpp_source):
                 result = subprocess.run([
                     'g++', '-std=c++17', '-O2', cpp_source, '-o', cpp_path
@@ -96,7 +98,7 @@ class CppVRPWrapper:
             # Run C++ solver with enhanced algorithm
             result = subprocess.run([
                 self.cpp_executable, 'enhanced', input_file
-            ], capture_output=True, text=True, timeout=30)
+            ], capture_output=True, text=True, timeout=30, cwd=os.path.dirname(self.cpp_executable))
             
             os.unlink(input_file)  # Clean up
             
@@ -121,7 +123,7 @@ class CppVRPWrapper:
             # Run C++ solver with nearest neighbor algorithm
             result = subprocess.run([
                 self.cpp_executable, 'nearest', input_file
-            ], capture_output=True, text=True, timeout=30)
+            ], capture_output=True, text=True, timeout=30, cwd=os.path.dirname(self.cpp_executable))
             
             os.unlink(input_file)  # Clean up
             
@@ -146,7 +148,7 @@ class CppVRPWrapper:
             # Run C++ solver with Clarke-Wright algorithm
             result = subprocess.run([
                 self.cpp_executable, 'clarke', input_file
-            ], capture_output=True, text=True, timeout=30)
+            ], capture_output=True, text=True, timeout=30, cwd=os.path.dirname(self.cpp_executable))
             
             os.unlink(input_file)  # Clean up
             
