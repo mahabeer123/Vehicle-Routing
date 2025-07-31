@@ -7,6 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from vrp_wrapper import CppVRPWrapper
 import plotly.graph_objects as go
+import pandas as pd
 import random
 import time
 
