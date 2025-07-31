@@ -12,7 +12,7 @@ import random
 import time
 
 # Version indicator for deployment
-VERSION = "2.1.0 - Enhanced Custom Algorithm with 2-opt optimization"
+VERSION = "2.2.0 - Enhanced Custom Algorithm with 2-opt optimization and advanced scoring"
 
 st.set_page_config(
     page_title="Vehicle Routing Problem Algorithm Demo",
@@ -22,9 +22,10 @@ st.set_page_config(
 )
 
 # Initialize C++ wrapper
-@st.cache_resource
-def get_cpp_wrapper():
-    return CppVRPWrapper()
+wrapper = CppVRPWrapper()
+
+# Debug message to confirm algorithm version
+st.sidebar.success(f"✅ Using {VERSION}")
 
 # Initialize session state
 if 'customer_data' not in st.session_state:
@@ -215,7 +216,7 @@ st.dataframe(customer_df, use_container_width=True)
 if st.button("🚀 Solve VRP with All Algorithms"):
     with st.spinner("Solving VRP problems..."):
         # Get C++ wrapper
-        cpp_wrapper = get_cpp_wrapper()
+        cpp_wrapper = wrapper
         
         # Solve with different algorithms
         enhanced_routes = cpp_wrapper.solve_enhanced_custom(problem, vehicle_capacity, num_vehicles)
