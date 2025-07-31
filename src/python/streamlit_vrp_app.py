@@ -30,9 +30,9 @@ st.markdown("Interactive comparison of your enhanced algorithm vs classical meth
 st.sidebar.header("Problem Settings")
 
 # Problem parameters
-num_customers = st.sidebar.slider("Number of Customers", 5, 15, 8)
-vehicle_capacity = st.sidebar.slider("Vehicle Capacity", 20, 50, 30)
-num_vehicles = st.sidebar.slider("Number of Vehicles", 2, 5, 3)
+num_customers = st.sidebar.slider("Number of Customers", 5, 15, 8, key="num_customers_slider")
+vehicle_capacity = st.sidebar.slider("Vehicle Capacity", 20, 50, 30, key="vehicle_capacity_slider")
+num_vehicles = st.sidebar.slider("Number of Vehicles", 2, 5, 3, key="num_vehicles_slider")
 
 # Customer data input
 st.sidebar.header("Customer Data")

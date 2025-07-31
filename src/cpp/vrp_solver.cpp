@@ -80,23 +80,21 @@ public:
         buildDistanceMatrix();
     }
     
-    // Enhanced Custom Algorithm (Clarke-Wright + 2-opt)
+    // Enhanced Custom Algorithm (Multi-factor scoring approach)
     vector<Route> enhancedCustomAlgorithm() {
         vector<Route> routes;
         vector<bool> visited(points.size(), false);
         visited[0] = true; // Depot is always visited
         
-        // Clarke-Wright savings approach
+        // First, create initial routes using savings approach for pairs
         vector<pair<double, pair<int, int>>> savings;
-        
         for (int i = 1; i < points.size(); i++) {
             for (int j = i + 1; j < points.size(); j++) {
                 double saving = distanceMatrix[0][i] + distanceMatrix[0][j] - distanceMatrix[i][j];
                 savings.push_back({saving, {i, j}});
             }
         }
-        
-        sort(savings.rbegin(), savings.rend()); // Sort by decreasing savings
+        sort(savings.rbegin(), savings.rend());
         
         // Create initial routes using savings
         for (auto& saving : savings) {
@@ -116,29 +114,71 @@ public:
             }
         }
         
-        // Add remaining customers
-        for (int i = 1; i < points.size(); i++) {
-            if (!visited[i]) {
-                // Try to add to existing route
-                bool added = false;
-                for (auto& route : routes) {
-                    if (route.totalDemand + points[i].demand <= vehicleCapacity) {
-                        route.customers.push_back(i);
-                        route.totalDemand += points[i].demand;
-                        route.totalCost = calculateRouteCost(route.customers);
-                        added = true;
-                        break;
+        // Multi-factor scoring approach for remaining customers
+        while (true) {
+            bool foundCustomer = false;
+            double bestScore = -1;
+            int bestCustomer = -1;
+            int bestRouteIndex = -1;
+            
+            // Try to add customers to existing routes
+            for (int customer = 1; customer < points.size(); customer++) {
+                if (visited[customer]) continue;
+                
+                for (int routeIndex = 0; routeIndex < routes.size(); routeIndex++) {
+                    Route& route = routes[routeIndex];
+                    
+                    // Check capacity constraint
+                    if (route.totalDemand + points[customer].demand > vehicleCapacity) continue;
+                    
+                    // Calculate score for this customer-route combination
+                    double score = calculateCustomScore(customer, route);
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestCustomer = customer;
+                        bestRouteIndex = routeIndex;
+                        foundCustomer = true;
                     }
                 }
-                
-                if (!added && routes.size() < numVehicles) {
-                    Route route;
-                    route.customers = {i};
-                    route.totalDemand = points[i].demand;
-                    route.totalCost = calculateRouteCost(route.customers);
-                    routes.push_back(route);
+            }
+            
+            // If no customer can be added to existing routes, create new route
+            if (!foundCustomer) {
+                for (int customer = 1; customer < points.size(); customer++) {
+                    if (visited[customer]) continue;
+                    
+                    if (routes.size() < numVehicles) {
+                        double score = calculateCustomScore(customer, Route());
+                        
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestCustomer = customer;
+                            bestRouteIndex = routes.size(); // New route
+                            foundCustomer = true;
+                        }
+                    }
                 }
             }
+            
+            if (!foundCustomer) break; // No more customers can be added
+            
+            // Add the best customer to the best route
+            if (bestRouteIndex == routes.size()) {
+                // Create new route
+                Route newRoute;
+                newRoute.customers = {bestCustomer};
+                newRoute.totalDemand = points[bestCustomer].demand;
+                newRoute.totalCost = calculateRouteCost(newRoute.customers);
+                routes.push_back(newRoute);
+            } else {
+                // Add to existing route
+                routes[bestRouteIndex].customers.push_back(bestCustomer);
+                routes[bestRouteIndex].totalDemand += points[bestCustomer].demand;
+                routes[bestRouteIndex].totalCost = calculateRouteCost(routes[bestRouteIndex].customers);
+            }
+            
+            visited[bestCustomer] = true;
         }
         
         // Apply 2-opt optimization to each route
@@ -147,6 +187,53 @@ public:
         }
         
         return routes;
+    }
+    
+    // Calculate custom scoring for customer-route combination
+    double calculateCustomScore(int customer, const Route& route) {
+        if (route.customers.empty()) {
+            // For new route, calculate distance from depot
+            double distance = distanceMatrix[0][customer];
+            double demandRatio = (double)points[customer].demand / vehicleCapacity;
+            // Balance distance and demand efficiency
+            return (1.0 / distance) * (1.0 + 0.5 * demandRatio);
+        } else {
+            // For existing route, find best insertion position
+            double bestScore = -1;
+            
+            for (int pos = 0; pos <= route.customers.size(); pos++) {
+                // Calculate distance if customer inserted at this position
+                double insertionCost = calculateInsertionCost(customer, route.customers, pos);
+                double demandRatio = (double)points[customer].demand / vehicleCapacity;
+                
+                // Penalty for long routes to encourage better distribution
+                double routeLengthPenalty = 1.0;
+                if (route.customers.size() >= 4) {
+                    routeLengthPenalty = 0.8; // Penalty for very long routes
+                } else if (route.customers.size() >= 3) {
+                    routeLengthPenalty = 0.9; // Small penalty for medium routes
+                }
+                
+                double score = (1.0 / insertionCost) * (1.0 + 0.5 * demandRatio) * routeLengthPenalty;
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                }
+            }
+            
+            return bestScore;
+        }
+    }
+    
+    // Calculate cost of inserting customer at specific position
+    double calculateInsertionCost(int customer, const vector<int>& route, int position) {
+        if (route.empty()) {
+            return distanceMatrix[0][customer] + distanceMatrix[customer][0];
+        }
+        
+        vector<int> newRoute = route;
+        newRoute.insert(newRoute.begin() + position, customer);
+        return calculateRouteCost(newRoute);
     }
     
     // 2-opt optimization for a single route

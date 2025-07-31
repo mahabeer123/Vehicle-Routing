@@ -100,10 +100,16 @@ The app will open at `http://localhost:8501`
 ## 🧠 Algorithm Details
 
 ### Enhanced Custom Algorithm
-- **Approach**: Clarke-Wright savings + 2-opt optimization
+- **Approach**: Hybrid savings + multi-factor scoring with demand ratio optimization
+- **Formula**: Score = (1/distance) × (1 + 0.5 × demand_ratio) × route_penalty
+- **Unique Features**: 
+  - Savings-based initial route formation for pairs
+  - Multi-factor scoring for customer insertion
+  - Route length penalty to prevent overly long routes
+  - 2-opt local search improvement
 - **Implementation**: C++ with O2 optimization
-- **Advantage**: Combines proven methods with local search improvement
-- **Performance**: Often achieves best results
+- **Advantage**: Combines proven savings approach with innovative scoring
+- **Performance**: Competitive with classical methods while being unique
 
 ### Nearest Neighbor Algorithm
 - **Approach**: Greedy selection of nearest unvisited customer
