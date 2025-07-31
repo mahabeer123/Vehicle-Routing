@@ -3,6 +3,7 @@ import json
 import tempfile
 import os
 import sys
+from vrp_algorithms import VRPAlgorithms
 
 class CppVRPWrapper:
     def __init__(self):
@@ -28,6 +29,7 @@ class CppVRPWrapper:
             # Try to compile if not found
             cpp_source = os.path.join(cpp_dir, 'vrp_solver.cpp')
             if os.path.exists(cpp_source):
+                print(f"🔧 Attempting to compile C++ solver from {cpp_source}")
                 result = subprocess.run([
                     'g++', '-std=c++17', '-O2', cpp_source, '-o', cpp_path
                 ], capture_output=True, text=True, timeout=30, cwd=cpp_dir)
@@ -37,12 +39,15 @@ class CppVRPWrapper:
                     print("✅ C++ VRP solver compiled successfully")
                 else:
                     print(f"❌ Compilation failed: {result.stderr}")
+                    print("⚠️ Using Python fallback implementation")
                     self.cpp_executable = None
             else:
-                print("❌ C++ source file not found")
+                print(f"❌ C++ source file not found at {cpp_source}")
+                print("⚠️ Using Python fallback implementation")
                 self.cpp_executable = None
         except Exception as e:
             print(f"❌ Compilation error: {e}")
+            print("⚠️ Using Python fallback implementation")
             self.cpp_executable = None
     
     def _create_input_file(self, points, vehicle_capacity, num_vehicles):
@@ -91,11 +96,14 @@ class CppVRPWrapper:
         return routes
     
     def solve_enhanced_custom(self, points, vehicle_capacity, num_vehicles):
-        """Solve using Enhanced Custom Algorithm (C++)"""
+        """Solve using Enhanced Custom Algorithm"""
         if not self.cpp_executable:
-            return self._fallback_solve(points, vehicle_capacity, num_vehicles, "enhanced")
+            print("⚠️ Using Python Enhanced Custom algorithm")
+            solver = VRPAlgorithms(points, vehicle_capacity, num_vehicles)
+            return solver.enhanced_custom_algorithm()
         
         try:
+            print(f"🔧 Using C++ solver: {self.cpp_executable}")
             input_file = self._create_input_file(points, vehicle_capacity, num_vehicles)
             
             # Get the cpp directory for working directory
@@ -109,19 +117,26 @@ class CppVRPWrapper:
             os.unlink(input_file)  # Clean up
             
             if result.returncode == 0:
+                print("✅ C++ Enhanced Custom algorithm executed successfully")
                 return self._parse_output(result.stdout)
             else:
                 print(f"❌ C++ solver error: {result.stderr}")
-                return self._fallback_solve(points, vehicle_capacity, num_vehicles, "enhanced")
+                print("⚠️ Falling back to Python implementation")
+                solver = VRPAlgorithms(points, vehicle_capacity, num_vehicles)
+                return solver.enhanced_custom_algorithm()
                 
         except Exception as e:
             print(f"❌ C++ solver exception: {e}")
-            return self._fallback_solve(points, vehicle_capacity, num_vehicles, "enhanced")
+            print("⚠️ Falling back to Python implementation")
+            solver = VRPAlgorithms(points, vehicle_capacity, num_vehicles)
+            return solver.enhanced_custom_algorithm()
     
     def solve_nearest_neighbor(self, points, vehicle_capacity, num_vehicles):
-        """Solve using Nearest Neighbor Algorithm (C++)"""
+        """Solve using Nearest Neighbor Algorithm"""
         if not self.cpp_executable:
-            return self._fallback_solve(points, vehicle_capacity, num_vehicles, "nearest")
+            print("⚠️ Using Python Nearest Neighbor algorithm")
+            solver = VRPAlgorithms(points, vehicle_capacity, num_vehicles)
+            return solver.nearest_neighbor_algorithm()
         
         try:
             input_file = self._create_input_file(points, vehicle_capacity, num_vehicles)
@@ -140,16 +155,22 @@ class CppVRPWrapper:
                 return self._parse_output(result.stdout)
             else:
                 print(f"❌ C++ solver error: {result.stderr}")
-                return self._fallback_solve(points, vehicle_capacity, num_vehicles, "nearest")
+                print("⚠️ Falling back to Python implementation")
+                solver = VRPAlgorithms(points, vehicle_capacity, num_vehicles)
+                return solver.nearest_neighbor_algorithm()
                 
         except Exception as e:
             print(f"❌ C++ solver exception: {e}")
-            return self._fallback_solve(points, vehicle_capacity, num_vehicles, "nearest")
+            print("⚠️ Falling back to Python implementation")
+            solver = VRPAlgorithms(points, vehicle_capacity, num_vehicles)
+            return solver.nearest_neighbor_algorithm()
     
     def solve_clarke_wright(self, points, vehicle_capacity, num_vehicles):
-        """Solve using Clarke-Wright Algorithm (C++)"""
+        """Solve using Clarke-Wright Algorithm"""
         if not self.cpp_executable:
-            return self._fallback_solve(points, vehicle_capacity, num_vehicles, "clarke")
+            print("⚠️ Using Python Clarke-Wright algorithm")
+            solver = VRPAlgorithms(points, vehicle_capacity, num_vehicles)
+            return solver.clarke_wright_algorithm()
         
         try:
             input_file = self._create_input_file(points, vehicle_capacity, num_vehicles)
@@ -168,11 +189,15 @@ class CppVRPWrapper:
                 return self._parse_output(result.stdout)
             else:
                 print(f"❌ C++ solver error: {result.stderr}")
-                return self._fallback_solve(points, vehicle_capacity, num_vehicles, "clarke")
+                print("⚠️ Falling back to Python implementation")
+                solver = VRPAlgorithms(points, vehicle_capacity, num_vehicles)
+                return solver.clarke_wright_algorithm()
                 
         except Exception as e:
             print(f"❌ C++ solver exception: {e}")
-            return self._fallback_solve(points, vehicle_capacity, num_vehicles, "clarke")
+            print("⚠️ Falling back to Python implementation")
+            solver = VRPAlgorithms(points, vehicle_capacity, num_vehicles)
+            return solver.clarke_wright_algorithm()
     
     def _fallback_solve(self, points, vehicle_capacity, num_vehicles, algorithm):
         """Fallback to simple Python implementation if C++ fails"""
