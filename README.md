@@ -169,24 +169,31 @@ The application tracks:
 
 ## 🚀 Deployment
 
+### Streamlit Cloud Deployment (Recommended)
+1. **Fork/Clone** this repository to your GitHub account
+2. **Visit** [share.streamlit.io](https://share.streamlit.io)
+3. **Connect** your GitHub repository
+4. **Set the path** to: `src/python/streamlit_vrp_app.py`
+5. **Deploy** - Streamlit Cloud will automatically build and deploy your app
+
 ### Local Deployment
 ```bash
-streamlit run src/python/streamlit_vrp_app.py
+# Install dependencies
+pip install -r requirements.txt
+
+# Compile C++ algorithms
+cd src/cpp
+g++ -std=c++17 -O2 vrp_solver.cpp -o vrp_solver
+
+# Run Streamlit app
+cd ../python
+streamlit run streamlit_vrp_app.py
 ```
 
-### Cloud Deployment
-1. **Streamlit Cloud**:
-   - Push to GitHub
-   - Connect repository to Streamlit Cloud
-   - Deploy automatically
-
-2. **Heroku**:
-   - Add `setup.sh` and `Procfile`
-   - Deploy using Heroku CLI
-
-3. **Railway**:
-   - Connect GitHub repository
-   - Automatic deployment
+### Alternative Cloud Platforms
+- **Heroku**: Use the provided `Procfile` and `setup.sh`
+- **Railway**: Connect GitHub repository for automatic deployment
+- **Render**: Deploy as a web service with the provided configuration
 
 ## 🤝 Contributing
 

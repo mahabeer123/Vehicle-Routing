@@ -4,6 +4,12 @@ import pandas as pd
 import random
 import time
 import math
+import os
+import sys
+
+# Add the parent directory to the path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from vrp_wrapper import CppVRPWrapper
 
 # Initialize C++ wrapper
@@ -15,11 +21,12 @@ def get_cpp_wrapper():
 if 'customer_data' not in st.session_state:
     st.session_state.customer_data = {}
 
-# Page configuration
+# Page configuration for deployment
 st.set_page_config(
-    page_title="VRP Algorithm Demo",
+    page_title="🚚 VRP Algorithm Demo",
     page_icon="🚚",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 # Main title
