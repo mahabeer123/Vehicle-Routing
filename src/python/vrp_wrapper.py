@@ -13,21 +13,24 @@ class CppVRPWrapper:
         """Compile the C++ VRP solver"""
         try:
             import os
+            # Get the absolute path to the project root
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)
+            cpp_dir = os.path.join(project_root, 'cpp')
+            
             # Check if executable already exists
-            cpp_path = os.path.join(os.path.dirname(__file__), '..', 'cpp', 'vrp_solver')
-            cpp_path = os.path.abspath(cpp_path)  # Get absolute path
+            cpp_path = os.path.join(cpp_dir, 'vrp_solver')
             if os.path.exists(cpp_path):
                 self.cpp_executable = cpp_path
                 print("✅ C++ VRP solver found")
                 return
             
             # Try to compile if not found
-            cpp_source = os.path.join(os.path.dirname(__file__), '..', 'cpp', 'vrp_solver.cpp')
-            cpp_source = os.path.abspath(cpp_source)  # Get absolute path
+            cpp_source = os.path.join(cpp_dir, 'vrp_solver.cpp')
             if os.path.exists(cpp_source):
                 result = subprocess.run([
                     'g++', '-std=c++17', '-O2', cpp_source, '-o', cpp_path
-                ], capture_output=True, text=True, timeout=30)
+                ], capture_output=True, text=True, timeout=30, cwd=cpp_dir)
                 
                 if result.returncode == 0:
                     self.cpp_executable = cpp_path
@@ -95,10 +98,13 @@ class CppVRPWrapper:
         try:
             input_file = self._create_input_file(points, vehicle_capacity, num_vehicles)
             
+            # Get the cpp directory for working directory
+            cpp_dir = os.path.dirname(self.cpp_executable)
+            
             # Run C++ solver with enhanced algorithm
             result = subprocess.run([
                 self.cpp_executable, 'enhanced', input_file
-            ], capture_output=True, text=True, timeout=30, cwd=os.path.dirname(self.cpp_executable))
+            ], capture_output=True, text=True, timeout=30, cwd=cpp_dir)
             
             os.unlink(input_file)  # Clean up
             
@@ -120,10 +126,13 @@ class CppVRPWrapper:
         try:
             input_file = self._create_input_file(points, vehicle_capacity, num_vehicles)
             
+            # Get the cpp directory for working directory
+            cpp_dir = os.path.dirname(self.cpp_executable)
+            
             # Run C++ solver with nearest neighbor algorithm
             result = subprocess.run([
                 self.cpp_executable, 'nearest', input_file
-            ], capture_output=True, text=True, timeout=30, cwd=os.path.dirname(self.cpp_executable))
+            ], capture_output=True, text=True, timeout=30, cwd=cpp_dir)
             
             os.unlink(input_file)  # Clean up
             
@@ -145,10 +154,13 @@ class CppVRPWrapper:
         try:
             input_file = self._create_input_file(points, vehicle_capacity, num_vehicles)
             
+            # Get the cpp directory for working directory
+            cpp_dir = os.path.dirname(self.cpp_executable)
+            
             # Run C++ solver with Clarke-Wright algorithm
             result = subprocess.run([
                 self.cpp_executable, 'clarke', input_file
-            ], capture_output=True, text=True, timeout=30, cwd=os.path.dirname(self.cpp_executable))
+            ], capture_output=True, text=True, timeout=30, cwd=cpp_dir)
             
             os.unlink(input_file)  # Clean up
             
