@@ -1,16 +1,24 @@
 import streamlit as st
-import plotly.graph_objects as go
-import pandas as pd
-import random
-import time
-import math
-import os
 import sys
+import os
 
 # Add the parent directory to the path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from vrp_wrapper import CppVRPWrapper
+import plotly.graph_objects as go
+import random
+import time
+
+# Version indicator for deployment
+VERSION = "2.1.0 - Enhanced Custom Algorithm with 2-opt optimization"
+
+st.set_page_config(
+    page_title="Vehicle Routing Problem Algorithm Demo",
+    page_icon="🚚",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # Initialize C++ wrapper
 @st.cache_resource
@@ -32,6 +40,10 @@ st.set_page_config(
 # Main title
 st.title("🚚 Vehicle Routing Problem Algorithm Demo")
 st.markdown("Interactive comparison of your enhanced algorithm vs classical methods")
+
+# Version display
+st.sidebar.markdown(f"**Version:** {VERSION}")
+st.sidebar.markdown("---")
 
 # Sidebar for problem settings
 st.sidebar.header("Problem Settings")
