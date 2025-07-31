@@ -51,26 +51,7 @@ class VRPAlgorithms:
         visited = [False] * len(self.points)
         visited[0] = True  # Depot is always visited
         
-        # First, create initial routes using savings approach for pairs
-        savings = []
-        for i in range(1, len(self.points)):
-            for j in range(i + 1, len(self.points)):
-                saving = self.distance_matrix[0][i] + self.distance_matrix[0][j] - self.distance_matrix[i][j]
-                savings.append((saving, i, j))
-        
-        savings.sort(reverse=True)
-        
-        # Create initial routes using savings
-        for saving, i, j in savings:
-            if not visited[i] and not visited[j]:
-                total_demand = self.points[i]['demand'] + self.points[j]['demand']
-                if total_demand <= self.vehicle_capacity:
-                    route = {'customers': [i, j], 'totalCost': 0, 'totalDemand': total_demand}
-                    route['totalCost'] = self._calculate_route_cost(route['customers'])
-                    routes.append(route)
-                    visited[i] = visited[j] = True
-        
-        # Multi-factor scoring approach for remaining customers
+        # Start with multi-factor scoring approach instead of savings
         while True:
             found_customer = False
             best_score = -1
@@ -142,7 +123,12 @@ class VRPAlgorithms:
             # For new route, calculate distance from depot
             distance = self.distance_matrix[0][customer]
             demand_ratio = self.points[customer]['demand'] / self.vehicle_capacity
-            return (1.0 / distance) * (1.0 + 0.5 * demand_ratio)
+            
+            # Enhanced scoring: consider demand efficiency and distance
+            efficiency_factor = 1.0 + 0.8 * demand_ratio  # Higher weight for demand efficiency
+            distance_factor = 1.0 / (distance + 1.0)  # Avoid division by zero
+            
+            return distance_factor * efficiency_factor
         else:
             # For existing route, find best insertion position
             best_score = -1
@@ -152,14 +138,23 @@ class VRPAlgorithms:
                 insertion_cost = self._calculate_insertion_cost(customer, route['customers'], pos)
                 demand_ratio = self.points[customer]['demand'] / self.vehicle_capacity
                 
-                # Penalty for long routes to encourage better distribution
+                # Enhanced penalty system for route efficiency
                 route_length_penalty = 1.0
                 if len(route['customers']) >= 4:
-                    route_length_penalty = 0.8
+                    route_length_penalty = 0.7  # Stronger penalty for long routes
                 elif len(route['customers']) >= 3:
-                    route_length_penalty = 0.9
+                    route_length_penalty = 0.85
                 
-                score = (1.0 / insertion_cost) * (1.0 + 0.5 * demand_ratio) * route_length_penalty
+                # Demand balancing factor - prefer routes with balanced demand
+                current_demand = route['totalDemand']
+                new_demand = current_demand + self.points[customer]['demand']
+                demand_balance_factor = 1.0 - abs(new_demand - self.vehicle_capacity/2) / self.vehicle_capacity
+                
+                # Enhanced scoring formula
+                efficiency_factor = 1.0 + 0.8 * demand_ratio
+                distance_factor = 1.0 / (insertion_cost + 1.0)
+                
+                score = distance_factor * efficiency_factor * route_length_penalty * demand_balance_factor
                 
                 if score > best_score:
                     best_score = score
