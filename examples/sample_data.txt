@@ -1,0 +1,22 @@
+# Sample VRP Problem Data
+# Format: Customer_ID Demand X_Coordinate Y_Coordinate
+
+# Problem Settings
+# Number of Customers: 8
+# Vehicle Capacity: 30
+# Number of Vehicles: 3
+
+# Customer Data
+1 9 83.92 32.74
+2 9 65.57 20.80
+3 1 85.88 84.37
+4 2 78.14 57.13
+5 10 44.41 45.61
+6 8 40.99 68.37
+7 4 63.11 76.05
+8 10 80.84 32.13
+
+# Expected Results:
+# Enhanced Custom: ~228.41 cost (2 routes)
+# Nearest Neighbor: ~248.98 cost (2 routes)  
+# Clarke-Wright: ~331.06 cost (4 routes) 
